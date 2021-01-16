@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator')
+const bcrypt = require('bcrypt');
 
 exports.signup = (req, res) => {
 
@@ -8,7 +9,7 @@ exports.signup = (req, res) => {
 
 
     User.findOne({email: req.body.email})
-    .exec((error, user) => {
+    .exec(async (error, user) => {
         if(user) return res.status(400).json({
             message:`User already exists`
         });
@@ -19,12 +20,13 @@ exports.signup = (req, res) => {
             email,
             password
         } = req.body
+        const hash_password = await bcrypt.hash(password, 10)
 
         const _user = new User({ 
             firstName,
             lastName,
             email,
-            password,
+            hash_password,
             username: Math.random().toString()
          })
 
@@ -50,7 +52,7 @@ exports.signin = (req, res) => {
         if(user) {
 
             if(user.authenticate(req.body.password)){
-                const token = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+                const token = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '2h' });
                 const { _id, firstName, lastName, email, role, fullName} = user;
                 
                 res.status(200).json({
