@@ -1,4 +1,3 @@
-
 const express = require('express');
 const { requireSignin, userMiddleware } = require('../common-middleware');
 const { addAddress, getAddress } = require('../controllers/address');
